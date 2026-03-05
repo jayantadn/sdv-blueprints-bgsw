@@ -89,27 +89,7 @@ fi
 PROTO_DIR="local/protos"
 GEN_DIR="local/protogen"
 
-# if proto directory is missing or empty, try to clone kuksa-databroker and copy
-if [ ! -d "$PROTO_DIR/kuksa/val/v1" ] || \
-   [ -z "$(ls -A $PROTO_DIR/kuksa/val/v1 2>/dev/null)" ]; then
-    echo "Proto definitions not found in $PROTO_DIR/kuksa/val/v1."
-    echo "Attempting to fetch from eclipse/kuksa-databroker repository..."
-    if ! command -v git >/dev/null 2>&1; then
-        echo "ERROR: git is required to clone protos but is not installed."
-        echo "Please install git or place the proto files manually."
-        exit 1
-    fi
-    tmp=$(mktemp -d)
-  
-    mkdir -p "$PROTO_DIR/kuksa/val/v1"
-    cp -r "$tmp"/proto/kuksa/val/v1/* "$PROTO_DIR/kuksa/val/v1/" || {
-        echo "ERROR: copying proto files failed"
-        rm -rf "$tmp"
-        exit 1
-    }
-    rm -rf "$tmp"
-    echo "Copied proto definitions into $PROTO_DIR/kuksa/val/v1."
-fi
+
 
 # regenerate C++ from every .proto file; this will create missing types.pb.*
 if [ -d "$PROTO_DIR/kuksa/val/v1" ]; then
