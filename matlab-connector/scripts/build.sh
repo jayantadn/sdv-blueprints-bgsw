@@ -9,7 +9,7 @@ echo "Building da_connector for local machine..."
 CC="gcc"
 CXX="g++"
 CFLAGS="-O2 -fPIC -w"
-CXXFLAGS="-O2 -fPIC -w -std=c++17"
+CXXFLAGS="-O2 -fPIC -w -std=c++17 -Ilocal/protogen"
 LDFLAGS="-shared"
 
 # gRPC and protobuf libraries
@@ -18,6 +18,7 @@ GRPC_LIBS="-lgrpc++ -lgrpc -lprotobuf -lpthread -ldl"
 # Source files
 C_SOURCES="da_connector.c"
 CPP_SOURCES="client.cpp"
+PROTOBUF_SOURCES="local/protogen/kuksa/val/v1/val.pb.cc local/protogen/kuksa/val/v1/val.grpc.pb.cc"
 MAIN_SOURCE="local/main.c"
 HEADERS="da_connector.h kuksa_bridge.h"
 
@@ -25,7 +26,6 @@ HEADERS="da_connector.h kuksa_bridge.h"
 BUILD_DIR="build"
 
 # Outputs
-LIB_OUTPUT="$BUILD_DIR/libda_connector.so"
 EXE_OUTPUT="$BUILD_DIR/da_connector_app"
 
 # Create build directory if it doesn't exist
@@ -69,25 +69,28 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Compile protobuf generated files
+echo "Compiling protobuf sources..."
+$CXX $CXXFLAGS -c -o $BUILD_DIR/val.pb.o local/protogen/kuksa/val/v1/val.pb.cc
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Protobuf compilation failed!"
+    exit 1
+fi
+
+$CXX $CXXFLAGS -c -o $BUILD_DIR/val.grpc.pb.o local/protogen/kuksa/val/v1/val.grpc.pb.cc
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Protobuf gRPC compilation failed!"
+    exit 1
+fi
+
 # Compile C++ source to object file
 echo "Compiling C++ source: $CPP_SOURCES..."
 $CXX $CXXFLAGS -c -o $BUILD_DIR/client.o $CPP_SOURCES
 
 if [ $? -ne 0 ]; then
     echo "ERROR: C++ compilation failed!"
-    exit 1
-fi
-
-# Link the shared library using C++ linker (for C++ runtime and gRPC)
-echo "Linking shared library..."
-$CXX $LDFLAGS -o $LIB_OUTPUT $BUILD_DIR/da_connector.o $BUILD_DIR/client.o $GRPC_LIBS
-
-# Check if linking was successful
-if [ $? -eq 0 ]; then
-    echo "Shared library build successful! Output: $LIB_OUTPUT"
-    ls -lh $LIB_OUTPUT
-else
-    echo "ERROR: Shared library linking failed!"
     exit 1
 fi
 
@@ -101,7 +104,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Linking executable..."
-$CXX -o $EXE_OUTPUT $BUILD_DIR/main.o $BUILD_DIR/da_connector.o $BUILD_DIR/client.o $GRPC_LIBS
+$CXX -o $EXE_OUTPUT $BUILD_DIR/main.o $BUILD_DIR/da_connector.o $BUILD_DIR/client.o $BUILD_DIR/val.pb.o $BUILD_DIR/val.grpc.pb.o $GRPC_LIBS
 
 # Check if compilation was successful
 if [ $? -eq 0 ]; then
