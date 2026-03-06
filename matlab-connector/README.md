@@ -7,7 +7,7 @@
 # Getting started
 
 ## Prerequisites
-1. 
+1. The usecase is tested on Raspberry Pi 5. The Legacy OS is installed.
 
 ## Build
 
@@ -17,4 +17,5 @@
 `sudo apt install -y libgrpc++-dev libprotobuf-dev protobuf-compiler protobuf-compiler-grpc pkg-config`
 
 ## Demo
-1. 
+1. Copy the repo contents to guest folder $HOME/digital.auto
+1. Execute the script `$HOME/digital.auto/scripts/setup_rpi.sh`

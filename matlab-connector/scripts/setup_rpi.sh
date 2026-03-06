@@ -72,15 +72,20 @@ else
     fi
 fi
 
-echo "Docker setup complete!"
+echo "Docker install complete!"
 
-# Pull the required Docker image
-echo "Pulling Docker image ghcr.io/eclipse-autowrx/sdv-runtime:latest..."
-if docker pull ghcr.io/eclipse-autowrx/sdv-runtime:latest; then
-    echo "Docker image pulled successfully."
+# Pull the required Docker image if it doesn't exist
+IMAGE_NAME="ghcr.io/eclipse-autowrx/sdv-runtime:latest"
+if docker image inspect "$IMAGE_NAME" &> /dev/null; then
+    echo "Docker image $IMAGE_NAME already exists locally."
 else
-    echo "ERROR: Failed to pull Docker image." >&2
-    exit 1
+    echo "Pulling Docker image $IMAGE_NAME..."
+    if docker pull "$IMAGE_NAME"; then
+        echo "Docker image pulled successfully."
+    else
+        echo "ERROR: Failed to pull Docker image." >&2
+        exit 1
+    fi
 fi
 
 # Check if Python 3 is installed
@@ -124,7 +129,7 @@ else
     fi
 fi
 
-echo "Python setup complete!"
+echo "Python install complete!"
 
 # Create digital.auto directory if it doesn't exist
 if [ ! -d "$DIGITAL_AUTO_PATH" ]; then
@@ -157,6 +162,55 @@ if [ $? -eq 0 ]; then
 else
     echo "WARNING: Failed to install kuksa-client package." >&2
     # Don't exit with error, as package might already be installed
+fi
+
+# Launching Docker container
+echo "Launching Docker container..."
+docker run -d -e RUNTIME_NAME="RpiMotorControl" -p 55555:55555 ghcr.io/eclipse-autowrx/sdv-runtime:latest
+
+if [ $? -eq 0 ]; then
+    echo "Docker container launched successfully."
+else
+    echo "ERROR: Failed to launch Docker container." >&2
+    exit 1
+fi
+
+# Wait for KUKSA service to be ready and accepting connections on port 55555
+echo "Waiting for KUKSA service to be ready on port 55555..."
+WAIT_TIME=0
+MAX_WAIT=60
+
+while [ $WAIT_TIME -lt $MAX_WAIT ]; do
+    if nc -z 127.0.0.1 55555 2>/dev/null || timeout 1 bash -c "echo > /dev/tcp/127.0.0.1/55555" 2>/dev/null; then
+        echo "KUKSA service is ready and accepting connections."
+        sleep 2  # Give it a couple more seconds to be fully initialized
+        break
+    fi
+    sleep 3
+    WAIT_TIME=$((WAIT_TIME + 3))
+    echo "Waiting for service... ($WAIT_TIME seconds elapsed)"
+done
+
+if [ $WAIT_TIME -ge $MAX_WAIT ]; then
+    echo "ERROR: KUKSA service did not become ready after ${MAX_WAIT} seconds." >&2
+    exit 1
+fi
+
+# Launch uds_publisher.py script in the virtual environment
+PUBLISHER_SCRIPT="$DIGITAL_AUTO_PATH/scripts/uds_publisher.py"
+
+if [ -f "$PUBLISHER_SCRIPT" ]; then
+    echo "Launching uds_publisher.py in virtual environment..."
+    "$VENV_PATH/bin/python" "$PUBLISHER_SCRIPT" &
+    
+    if [ $? -eq 0 ]; then
+        echo "uds_publisher.py launched successfully."
+    else
+        echo "ERROR: Failed to launch uds_publisher.py." >&2
+        exit 1
+    fi
+else
+    echo "WARNING: uds_publisher.py not found at $PUBLISHER_SCRIPT" >&2
 fi
 
 echo "Setup complete!"
