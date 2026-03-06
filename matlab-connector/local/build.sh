@@ -92,12 +92,12 @@ GEN_DIR="local/protogen"
 
 
 # Compile protobuf generated files
-# Automatically build any .pb.cc files present in the protogen directory
+# Automatically build any .pb.cpp files present in the protogen directory
 PROTO_DIR="local/protogen/kuksa/val/v1"
 echo "Compiling protobuf sources in $PROTO_DIR..."
-for src in "$PROTO_DIR"/*.pb.cc; do
+for src in "$PROTO_DIR"/*.pb.cpp; do
     [ -e "$src" ] || continue
-    obj="$BUILD_DIR/$(basename "$src" .cc).o"
+    obj="$BUILD_DIR/$(basename "$src" .cpp).o"
     echo "  $src -> $obj"
     $CXX $CXXFLAGS -c -o "$obj" "$src"
     if [ $? -ne 0 ]; then
