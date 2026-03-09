@@ -62,7 +62,6 @@ int uds_listen(char *buffer, size_t buffer_size)
   ssize_t bytes_received;
   const char *socket_path = "/tmp/wiper_status.sock";
 
-  // Create socket file descriptor (client endpoint)
   sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (sock_fd == -1)
   {
@@ -70,12 +69,10 @@ int uds_listen(char *buffer, size_t buffer_size)
     return -1;
   }
 
-  // Setup socket address
   memset(&addr, 0, sizeof(addr));
   addr.sun_family = AF_UNIX;
   strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
 
-  // Connect to the socket
   if (connect(sock_fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
     fprintf(stderr, "Failed to connect to socket: %s\n", socket_path);
@@ -83,63 +80,71 @@ int uds_listen(char *buffer, size_t buffer_size)
     return -1;
   }
 
-  // Read the message (one-shot read)
   bytes_received = recv(sock_fd, buffer, buffer_size - 1, 0);
   if (bytes_received > 0)
   {
-    buffer[bytes_received] = '\0'; // Null-terminate the string
-
-    // Remove trailing newline if present
-    if (bytes_received > 0 && buffer[bytes_received - 1] == '\n')
+    buffer[bytes_received] = '\0';
+    if (buffer[bytes_received - 1] == '\n')
     {
       buffer[bytes_received - 1] = '\0';
     }
   }
   else if (bytes_received == 0)
   {
-    fprintf(stderr, "No data received from socket\n");
     close(sock_fd);
     return 0;
   }
   else
   {
-    fprintf(stderr, "Error receiving data from socket\n");
     close(sock_fd);
     return -1;
   }
 
-  // Close the socket
   close(sock_fd);
-
   return bytes_received;
+}
+
+const char *kuksa_get_wiper_mode(void)
+{
+  static char mode[64] = "OFF";
+  char buffer[128] = "";
+
+  int result = uds_listen(buffer, sizeof(buffer));
+  if (result > 0)
+  {
+    strncpy(mode, buffer, sizeof(mode) - 1);
+    mode[sizeof(mode) - 1] = '\0';
+  }
+
+  return mode;
 }
 
 double da_connector()
 {
-  char buffer[1024];
-  int result = uds_listen(buffer, sizeof(buffer));
-
-  if (result > 0)
+  const char *mode = kuksa_get_wiper_mode();
+  if (mode == NULL)
   {
-    log_message(buffer);
+    return 0;
+  }
 
-    // Map wiper mode to return value
-    if (strcmp(buffer, "OFF") == 0)
-    {
-      return 0;
-    }
-    else if (strcmp(buffer, "SLOW") == 0)
-    {
-      return 500;
-    }
-    else if (strcmp(buffer, "MEDIUM") == 0)
-    {
-      return 750;
-    }
-    else if (strcmp(buffer, "FAST") == 0)
-    {
-      return 1000;
-    }
+  log_message(mode);
+
+  // Map wiper mode to return value
+  if (strcmp(mode, "OFF") == 0)
+  {
+    return 0;
+  }
+  else if (strcmp(mode, "SLOW") == 0)
+  {
+    return 500;
+  }
+  else if (strcmp(mode, "MEDIUM") == 0)
+  {
+    return 750;
+  }
+  else if (strcmp(mode, "FAST") == 0)
+  {
+    return 1000;
   }
 
   // Default return if no valid mode received

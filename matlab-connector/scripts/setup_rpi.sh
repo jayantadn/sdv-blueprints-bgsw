@@ -6,6 +6,9 @@
 
 set -e  # Exit on error
 
+# Resolve script directory so we can run helper scripts reliably from anywhere
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 DIGITAL_AUTO_DIR="digital.auto"
 VENV_NAME=".venv_da"
 
@@ -214,4 +217,12 @@ else
 fi
 
 echo "Setup complete!"
+
+# Build Simulink static library (libkuksa.a) so it is ready for Simulink builds.
+# This is optional, but ensures the latest build artifact is available.
+if [ -x "$SCRIPT_DIR/build_simulink_lib.sh" ]; then
+    echo "Running $SCRIPT_DIR/build_simulink_lib.sh..."
+    "$SCRIPT_DIR/build_simulink_lib.sh"
+fi
+
 exit 0
