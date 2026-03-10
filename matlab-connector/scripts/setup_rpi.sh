@@ -218,11 +218,5 @@ fi
 
 echo "Setup complete!"
 
-# Build Simulink static library (libkuksa.a) so it is ready for Simulink builds.
-# This is optional, but ensures the latest build artifact is available.
-if [ -x "$SCRIPT_DIR/build_simulink_lib.sh" ]; then
-    echo "Running $SCRIPT_DIR/build_simulink_lib.sh..."
-    "$SCRIPT_DIR/build_simulink_lib.sh"
-fi
 
 exit 0
