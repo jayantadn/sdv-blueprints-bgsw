@@ -6,6 +6,9 @@
 
 set -e  # Exit on error
 
+# Resolve script directory so we can run helper scripts reliably from anywhere
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 DIGITAL_AUTO_DIR="digital.auto"
 VENV_NAME=".venv_da"
 
@@ -214,4 +217,6 @@ else
 fi
 
 echo "Setup complete!"
+
+
 exit 0
