@@ -15,6 +15,7 @@ double da_connector()
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include "kuksa_bridge.h"
 
 // Static buffer to track the last logged message
 static char last_message[256] = "";
