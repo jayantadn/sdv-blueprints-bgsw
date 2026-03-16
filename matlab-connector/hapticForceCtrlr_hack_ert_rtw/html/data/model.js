@@ -1,0 +1,1 @@
+var modelInfo = {model:"hapticForceCtrlr_hack"};var modelHierarchy=[{model:"hapticForceCtrlr_hack",relativePath:"_internal.html",parent:"null"},];var AddCode = true;var ProtectedModel = false;
