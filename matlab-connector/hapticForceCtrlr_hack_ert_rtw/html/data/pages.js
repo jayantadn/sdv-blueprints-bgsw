@@ -1,1 +1,0 @@
-var PagesHeading = 'Content'; var reportPages = [["Summary","hapticForceCtrlr_hack_survey.html"],["Subsystem Report","hapticForceCtrlr_hack_subsystems.html"],["Code Interface Report","hapticForceCtrlr_hack_interface.html"],["Eliminated Blocks","hapticForceCtrlr_hack_reducedblocks.html"]];
