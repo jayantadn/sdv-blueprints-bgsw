@@ -1,0 +1,18 @@
+# Simulink generated artifacts
+slprj/
+**/slprj/
+*.slxc
+*.autosave
+
+# Generated model output from PotholeAlert.m
+model/PotholeAlertModel.slx
+
+# MATLAB temporary files
+*.asv
+*.mexa64
+*.mexw64
+*.mexmaci64
+
+# OS/editor clutter
+.DS_Store
+Thumbs.db
