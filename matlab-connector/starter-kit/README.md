@@ -27,7 +27,7 @@ To execute the **Smart Wipers with Starter Kit** prototype and enable the physic
 1. Open the project (`wipersCtrlr.prj`) in MATLAB.
 1. Open the simulink model (`models\hapticForceCtrlr.slx`)
 1. Click **Monitor & Tune**. The build process will compile the executable for the Pi. Then transfer and execute on target.
-1. Launch the digital.auto prototype from this [link](https://playground.digital.auto/model/69a686b45ee0670962b69bb2/library/prototype/69a686c75ee0670962b69c4c/dashboard)
+1. Launch the digital.auto prototype from this [link](https://playground.digital.auto/model/69a686b45ee0670962b69bb2)
 1. Add/select the runtime and click the `RUN` button.
 
 ## Demo
