@@ -1,4 +1,3 @@
-Here is the complete Markdown code for your `README.md` file. You can copy this entire block and paste it directly into your file:
 
 ```markdown
 # digital.auto MATLAB Simulink Connector: Smart Wipers
