@@ -4,9 +4,6 @@ slprj/
 *.slxc
 *.autosave
 
-# Generated model output from PotholeAlert.m
-model/PotholeAlertModel.slx
-
 # MATLAB temporary files
 *.asv
 *.mexa64
