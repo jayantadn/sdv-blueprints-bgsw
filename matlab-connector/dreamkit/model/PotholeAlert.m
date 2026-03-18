@@ -19,6 +19,9 @@ open_system(model)
 %% Configuration: Set USE_KUKSA to true when running on Linux with KUKSA feeders
 USE_KUKSA = true;  % Set to true for KUKSA integration, false for test signals
 
+%% Code generation: Set GENERATE_CODE to true to generate C/C++ code with Simulink Coder
+GENERATE_CODE = false;  % Set to true for code generation, false to skip
+
 %% Add signal sources
 if USE_KUKSA
     fprintf('Using KUKSA C Caller integration...\n');
@@ -153,6 +156,16 @@ Simulink.BlockDiagram.arrangeSystem(model)
 
 %% save
 save_system(model)
+
+%% generate code
+if GENERATE_CODE
+    fprintf('Generating C/C++ code with Simulink Coder...\n');
+    set_param(model, 'SystemTargetFile', 'ert.tlc');
+    slbuild(model);
+    fprintf('Code generation complete. Output in %s_ert_rtw/\n', model);
+else
+    fprintf('Code generation skipped (GENERATE_CODE = false). Set GENERATE_CODE = true to enable.\n');
+end
 
 %% run simulation
 set_param(model,"StopTime","12")
