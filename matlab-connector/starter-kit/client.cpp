@@ -146,9 +146,7 @@ public:
     }
 };
 
-/* C bridge function for C code */
-
-extern "C" const char *kuksa_get_wiper_mode()
+const char *kuksa_get_wiper_mode()
 {
     static std::string result = "OFF";
 

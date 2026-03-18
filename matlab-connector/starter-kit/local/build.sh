@@ -1,7 +1,13 @@
 #!/bin/bash
+set -euo pipefail
 
-# Build script for local machine
-# Compiles da_connector.c natively
+# Build script for local machine.
+# Builds:
+#  - a static library for Simulink (build/libkuksa.a)
+#  - a local test executable (build/da_connector_app)
+
+# This script is intentionally minimal: just compile sources, build the static
+# library for Simulink, and (optionally) link the test executable.
 
 echo "Building da_connector for local machine..."
 
@@ -18,9 +24,8 @@ else
     GRPC_LIBS=""
 fi
 
-CFLAGS="-O2 -fPIC -w -I. $GRPC_CFLAGS"
-CXXFLAGS="-O2 -fPIC -w -std=c++17 -I. -Ilocal/protogen -Ilocal/protogen/kuksa/val/v1 $GRPC_CFLAGS"
-LDFLAGS="-shared"
+CFLAGS="-O2 -fPIC -w -pthread -I. $GRPC_CFLAGS"
+CXXFLAGS="-O2 -fPIC -w -std=c++17 -pthread -I. -Ilocal/protogen -Ilocal/protogen/kuksa/val/v1 $GRPC_CFLAGS"
 
 # always link protobuf as well (pkg-config for grpc++ does not include it)
 GRPC_LIBS="$GRPC_LIBS -lprotobuf"
@@ -114,6 +119,17 @@ if [ $? -ne 0 ]; then
     echo "ERROR: C++ compilation failed!"
     exit 1
 fi
+
+# Build the static Simulink library
+LIB_OUTPUT="$BUILD_DIR/libkuksa.a"
+# Archive all object files (protobuf + C/C++ sources)
+# We build the library before compiling main.o so it doesn't get included.
+
+echo "Building static library: $LIB_OUTPUT"
+# shellcheck disable=SC2086
+ar -rcs "$LIB_OUTPUT" "$BUILD_DIR"/*.o
+
+echo "Built static library: $LIB_OUTPUT"
 
 # Compile the executable using C++ linker (since it links with C++ code)
 echo "Compiling executable $MAIN_SOURCE..."
